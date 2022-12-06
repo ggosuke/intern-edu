@@ -7,6 +7,7 @@
 5. `cd frontend` 後 `npm install`
 6. `npm run dev`　でフロントエンドを起動
 7. 別画面で `cd backend` 後 `python server.py` でバックエンドを起動
+8. ブラウザで `localhost` にアクセス
 
 ### 前提
 - DockerDesktopインストール (https://www.docker.com/products/docker-desktop/)
