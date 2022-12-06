@@ -20,12 +20,18 @@
 
 <script>
 import axios from 'axios'
+axios.defaults.baseURL = 'http://localhost';
 
 export default {
-  name: 'InspirePage',
+  // 静的データ
+  data() {
+    return {
+      items: []
+    }
+  },
+  // 通信で取得するデータ
   async asyncData () {
-    let data = await axios.get('http://localhost/api/hello')
-    console.log(data)
+    const data = await axios.get('/api/hello')
     return data.data
   }
 }

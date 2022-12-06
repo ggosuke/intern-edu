@@ -45,11 +45,6 @@ export default {
     '@nuxtjs/axios',
   ],
 
-  // Axios module configuration: https://go.nuxtjs.dev/config-axios
-  env: {
-    HOST_URL: process.env.HOST_URL || 'http://localhost:5000'
-  },
-
   // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
   vuetify: {
     customVariables: ['~/assets/variables.scss'],
