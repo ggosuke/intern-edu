@@ -24,7 +24,7 @@ import axios from 'axios'
 export default {
   name: 'InspirePage',
   async asyncData () {
-    let data = await axios.get('http://localhost/api')
+    let data = await axios.get('http://localhost/api/hello')
     console.log(data)
     return data.data
   }
