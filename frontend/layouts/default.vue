@@ -64,18 +64,23 @@ export default {
       items: [
         {
           icon: 'mdi-apps',
-          title: 'Welcome',
+          title: 'メインページ',
           to: '/'
         },
         {
+          icon: 'mdi-apps',
+          title: 'カレンダー',
+          to: '/calendar'
+        },
+        {
           icon: 'mdi-chart-bubble',
-          title: 'Inspire',
-          to: '/inspire'
+          title: 'TODO',
+          to: '/todo'
         }
       ],
       miniVariant: false,
       right: true,
-      title: 'App Title'
+      title: 'Minnade wiki@uki 学生ポータル'
     }
   }
 }
