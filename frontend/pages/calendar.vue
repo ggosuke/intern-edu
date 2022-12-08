@@ -67,9 +67,6 @@
                 <v-list-item @click="type = 'month'">
                     <v-list-item-title>Month</v-list-item-title>
                 </v-list-item>
-                <v-list-item @click="type = '4day'">
-                    <v-list-item-title>4 days</v-list-item-title>
-                </v-list-item>
                 </v-list>
             </v-menu>
             </v-toolbar>
@@ -135,7 +132,19 @@
 </template>
   
 <script>
+  import axios from 'axios'
+  axios.defaults.baseURL = 'http://localhost';
+
   export default {
+    
+    async created() {
+      try {
+        const data = await axios.get('/api/getCalender')
+        this.calendardata = JSON.parse(JSON.stringify(data.data.carenders))
+      } catch (error) {
+        
+      }
+    },
     data: () => ({
       focus: '',
       type: 'month',
@@ -143,7 +152,6 @@
         month: 'Month',
         week: 'Week',
         day: 'Day',
-        '4day': '4 Days',
       },
       selectedEvent: {},
       selectedElement: null,
@@ -151,6 +159,7 @@
       events: [],
       colors: ['blue', 'indigo', 'deep-purple', 'cyan', 'green', 'orange', 'grey darken-1'],
       names: ['Meeting', 'Holiday', 'PTO', 'Travel', 'Event', 'Birthday', 'Conference', 'Party'],
+      calendardata: []
     }),
     mounted () {
       this.$refs.calendar.checkChange()
@@ -187,30 +196,27 @@
         nativeEvent.stopPropagation()
       },
       updateRange ({ start, end }) {
+        console.log(this.calendardata)
         const events = []
-        const min = new Date(`${start.date}T00:00:00`)
-        const max = new Date(`${end.date}T23:59:59`)
-        const days = (max.getTime() - min.getTime()) / 86400000
-        const eventCount = this.rnd(days, days + 20)
-        for (let i = 0; i < eventCount; i++) {
-          const allDay = this.rnd(0, 3) === 0
-          const firstTimestamp = this.rnd(min.getTime(), max.getTime())
-          const first = new Date(firstTimestamp - (firstTimestamp % 900000))
-          const secondTimestamp = this.rnd(2, allDay ? 288 : 8) * 900000
-          const second = new Date(first.getTime() + secondTimestamp)
+        this.calendardata.forEach(e=>{
           events.push({
-            name: this.names[this.rnd(0, this.names.length - 1)],
-            start: first,
-            end: second,
+            name: e.name,
+            start: e.starttime,
+            end: e.endtime,
             color: this.colors[this.rnd(0, this.colors.length - 1)],
-            timed: !allDay,
+            timed: true
           })
-        }
+        })
         this.events = events
       },
       rnd (a, b) {
         return Math.floor((b - a + 1) * Math.random()) + a
       },
     },
+    async asyncData () {
+      const data = await axios.get('/api/getCalender')
+      //this.calendardata = data.data.carenders
+      return {data: {calendardata: data.data.carenders}}
+    }
   }
 </script>

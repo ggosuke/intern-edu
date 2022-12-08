@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from dataclasses import dataclass
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 from typing import Iterable, Dict, Any
 
@@ -21,7 +21,8 @@ class ClassTask:
 @dataclass
 class ClassDetailsData:
   day_of_week: str
-  datetime: str
+  starttime: str
+  endtime: str
   name: str
   classroom: str
   links: Iterable[str]
@@ -32,13 +33,17 @@ class ClassDetailsData:
 
 
 
-class_date = datetime.now(pytz.timezone('Asia/Tokyo')).strftime('%Y%m%d %H%M')
+class_startdate = datetime.now(pytz.timezone('Asia/Tokyo'))
+class_enddata = class_startdate + timedelta(minutes=90)
+class_startdate_str = class_startdate.strftime('%Y-%m-%dT%H:%M:00')
+class_enddata_str = class_enddata.strftime('%Y-%m-%dT%H:%M:00')
+
 class_rough_datas = {
-  "00001" : ClassData(day_of_week="Monday", datetime=class_date, name="線形代数", id='0001'),
+  "00001" : ClassData(day_of_week="Monday", datetime=class_startdate_str, name="線形代数", id='0001'),
 }
 class_detail_datas = {
   "00001": ClassDetailsData(
-            day_of_week="Monday", datetime=class_date, name="線形代数", id="00001",
+            day_of_week="Monday", starttime=class_startdate_str, endtime=class_enddata_str, name="線形代数", id="00001",
             classroom="F123", 
             links=["https://ibm.webex.com/ibm-jp/j.php?MTID=m0372978239d101675d877a7c6ded9a5b"],
             teacher="aaa",
