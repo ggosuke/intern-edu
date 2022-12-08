@@ -134,7 +134,7 @@
 <script>
   import axios from 'axios'
   axios.defaults.baseURL = 'http://localhost';
-
+  globalThis.carenders = []
   export default {
     
     async created() {
@@ -196,26 +196,25 @@
         nativeEvent.stopPropagation()
       },
       updateRange ({ start, end }) {
+        console.log(globalThis.carenders)
         console.log(this.calendardata)
         const events = []
-        this.calendardata.forEach(e=>{
+        globalThis.carenders.forEach(e=>{
           events.push({
             name: e.name,
             start: e.starttime,
             end: e.endtime,
-            color: this.colors[this.rnd(0, this.colors.length - 1)],
+            color: "blue",
             timed: true
           })
         })
         this.events = events
       },
-      rnd (a, b) {
-        return Math.floor((b - a + 1) * Math.random()) + a
-      },
     },
     async asyncData () {
       const data = await axios.get('/api/getCalender')
       //this.calendardata = data.data.carenders
+      globalThis.carenders = data.data.carenders
       return {data: {calendardata: data.data.carenders}}
     }
   }
