@@ -7,7 +7,7 @@
         class="mb-5"
       >
       <blockquote class="blockquote">
-        {{ data.message }}
+        {{ data.classdata }}
         <footer>
           <small>
             <em>&mdash;John Johnson</em>
@@ -33,7 +33,7 @@ export default {
   // 通信で取得するデータ
   async asyncData () {
     const data = await axios.get('/api/getCalenderDetail/00001')
-    return data.data
+    return data
   }
 }
 </script>
