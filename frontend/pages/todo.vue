@@ -7,7 +7,7 @@
         class="mb-5"
       >
       <blockquote class="blockquote">
-        {{ data.message }}
+        {{ data.classdata }}
         <footer>
           <small>
             <em>&mdash;John Johnson</em>
@@ -23,6 +23,7 @@ import axios from 'axios'
 axios.defaults.baseURL = 'http://localhost';
 
 export default {
+  name: 'Todo',
   // 静的データ
   data() {
     return {
@@ -31,8 +32,8 @@ export default {
   },
   // 通信で取得するデータ
   async asyncData () {
-    const data = await axios.get('/api/hello')
-    return data.data
+    const data = await axios.get('/api/getCalenderDetail/00001')
+    return data
   }
 }
 </script>
