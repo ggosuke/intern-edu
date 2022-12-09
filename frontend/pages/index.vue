@@ -9,9 +9,6 @@
 </template>
 
 <script>
-import axios from 'axios'
-axios.defaults.baseURL = 'http://localhost';
-
 export default {
   // 静的データ
   data() {
@@ -19,10 +16,5 @@ export default {
       items: []
     }
   },
-  // 通信で取得するデータ
-  async asyncData () {
-    const data = await axios.get('/api/getCalender')
-    return data.data
-  }
 }
 </script>

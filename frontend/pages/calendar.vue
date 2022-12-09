@@ -58,9 +58,6 @@
                 </v-btn>
                 </template>
                 <v-list>
-                <v-list-item @click="type = 'day'">
-                    <v-list-item-title>Day</v-list-item-title>
-                </v-list-item>
                 <v-list-item @click="type = 'week'">
                     <v-list-item-title>Week</v-list-item-title>
                 </v-list-item>
@@ -80,51 +77,20 @@
             :event-color="getEventColor"
             :type="type"
             @click:event="showEvent"
-            @click:more="viewDay"
-            @click:date="viewDay"
+            @click:more="viewWeek"
+            @click:date="viewWeek"
             @change="updateRange"
             ></v-calendar>
+            <template v-if="selectedEvent">
             <v-menu
             v-model="selectedOpen"
             :close-on-content-click="false"
             :activator="selectedElement"
             offset-x
             >
-            <v-card
-                color="grey lighten-4"
-                min-width="350px"
-                flat
-            >
-                <v-toolbar
-                :color="selectedEvent.color"
-                dark
-                >
-                <v-btn icon>
-                    <v-icon>mdi-pencil</v-icon>
-                </v-btn>
-                <v-toolbar-title v-html="selectedEvent.name"></v-toolbar-title>
-                <v-spacer></v-spacer>
-                <v-btn icon>
-                    <v-icon>mdi-heart</v-icon>
-                </v-btn>
-                <v-btn icon>
-                    <v-icon>mdi-dots-vertical</v-icon>
-                </v-btn>
-                </v-toolbar>
-                <v-card-text>
-                <span v-html="selectedEvent.details"></span>
-                </v-card-text>
-                <v-card-actions>
-                <v-btn
-                    text
-                    color="secondary"
-                    @click="selectedOpen = false"
-                >
-                    Cancel
-                </v-btn>
-                </v-card-actions>
-            </v-card>
-            </v-menu>
+            <profile-card :key="selectedEvent.details.id" :initial-data="selectedEvent.details" 
+              :color="selectedEvent.color" @close="closeCard" @submitted="submitted"/>
+            </v-menu></template>
         </v-sheet>
         </v-col>
     </v-row>
@@ -134,26 +100,16 @@
 <script>
   import axios from 'axios'
   axios.defaults.baseURL = 'http://localhost';
-  globalThis.carenders = []
+  globalThis.calendar = []
   export default {
-    
-    async created() {
-      try {
-        const data = await axios.get('/api/getCalender')
-        this.calendardata = JSON.parse(JSON.stringify(data.data.carenders))
-      } catch (error) {
-        
-      }
-    },
     data: () => ({
       focus: '',
       type: 'month',
       typeToLabel: {
         month: 'Month',
         week: 'Week',
-        day: 'Day',
       },
-      selectedEvent: {},
+      selectedEvent: null,
       selectedElement: null,
       selectedOpen: false,
       events: [],
@@ -165,9 +121,9 @@
       this.$refs.calendar.checkChange()
     },
     methods: {
-      viewDay ({ date }) {
+      viewWeek ({ date }) {
         this.focus = date
-        this.type = 'day'
+        this.type = 'week'
       },
       getEventColor (event) {
         return event.color
@@ -189,33 +145,62 @@
         }
         if (this.selectedOpen) {
           this.selectedOpen = false
+          this.selectedEvent = null
           requestAnimationFrame(() => requestAnimationFrame(() => open()))
         } else {
           open()
         }
         nativeEvent.stopPropagation()
       },
+      closeCard () {
+        this.selectedOpen = false
+        this.selectedEvent = null
+      },
+      submitted (newevent){
+        console.log(newevent.name)
+        const bind_this = this
+        axios.put("/api/putCalenderDetail/" + newevent.id, newevent).then(res =>{
+          console.log(res)
+          for (let i = 0; i < bind_this.calendardata.length; i++){
+            let elem = bind_this.calendardata[i]
+            if (elem.id != newevent.id){
+              continue
+            }
+            bind_this.$set(bind_this.calendardata, i, newevent) 
+          }
+          this.updateRange({start: 0, end: 0})
+          this.$forceUpdate()
+        }).catch(err=>{console.log(err)})
+      },
       updateRange ({ start, end }) {
-        console.log(globalThis.carenders)
-        console.log(this.calendardata)
         const events = []
-        globalThis.carenders.forEach(e=>{
+        this.calendardata.forEach((e)=>{
           events.push({
             name: e.name,
             start: e.starttime,
             end: e.endtime,
             color: "blue",
-            timed: true
+            timed: true,
+            details: e
           })
-        })
+        }, this)
         this.events = events
       },
     },
+    created: function(){
+      console.log(JSON.parse(JSON.stringify(this.calendardata)))
+    },
     async asyncData () {
       const data = await axios.get('/api/getCalender')
-      //this.calendardata = data.data.carenders
-      globalThis.carenders = data.data.carenders
-      return {data: {calendardata: data.data.carenders}}
+      return {calendardata: data.data.calendar}
     }
   }
 </script>
+
+<style>
+.v-application .grey.lighten-4 {
+    background-color: #333333 !important;
+    border-color: #ffffff !important;
+}
+
+</style>

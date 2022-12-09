@@ -80,7 +80,7 @@ export default {
       ],
       miniVariant: false,
       right: true,
-      title: 'Minnade wiki@uki 学生ポータル'
+      title: 'カレンダー'
     }
   }
 }
