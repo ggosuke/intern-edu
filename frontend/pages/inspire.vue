@@ -10,45 +10,50 @@
             <v-row dense>
               <v-col cols="12">
                 <v-card
-                  color="#385F73"
-                  dark
+                  color="white"
+                  light
                   class="ma-2"
-                  v-for = "item in items"
+                  v-for = "(item,index) in items"
                   >
                   <v-card-title class="text-h5">
                     {{item.task}}
                   </v-card-title>
 
-                  <div class="text-center">
-                    <v-chip
-                      class="ma-2"
-                      color="red"
+                  <div class="text-left ml-3" >
+                    <v-chip label
+                      class="ma-1"
+                      color="blue"
                       text-color="white"
+                      
+
                     >
                       {{item.lesson}}
                     </v-chip>
 
-                    <v-chip
-                      class="ma-2"
+                    <v-chip label
+                      class="ma-1"
+                      style= "font-weight:bold" 
                       color="green"
                       text-color="white"
                     >
-                      {{item.due}}
+                      あと
+                      {{remainDay(item.due)}}
+                      日?�?
                     </v-chip>
                   </div>
                   
                   <v-card-subtitle
-                    class ="text-center" >
-
+                    class ="text-left" >
                   
-                    課題�??容xxxxxxxxxxxxxxxxx
+                    {{item.task_detail}}
                   </v-card-subtitle>
 
                   <v-card-actions >
                     <v-col class ="text-right">
-                      <v-btn>
+                      <v-btn @click="done(index)">
                         完�?
                       </v-btn>
+                    
                     </v-col>
                   </v-card-actions>
                 </v-card>
@@ -75,19 +80,61 @@ export default {
   data() {
     return {
       items: [{
-        task: "task1",
-        due: "12/1",
-        lesson: "lesson1",
-        task_detail: "task1xxxx"
+        lesson_id: 0,
+        task: "課�?1",
+        due: "2022/12/20",
+        lesson: "線形代数1",
+        task_detail: "練習問�?2-20"
       },{
-        task: "task2",
-        due: "12/1",
-        lesson: "lesson2",
-        task_detail: "task2xxxx"
+        lesson_id: 1,
+        task: "課�?2",
+        due: "2023/1/20",
+        lesson: "古典中世音楽",
+        task_detail: "歴史につ�?て"
+      },{
+        lesson_id: 2,
+        task: "課�?3",
+        due: "2023/2/23",
+        lesson: "古典中世音楽",
+        task_detail: "歴史につ�?て"
+      },{
+        lesson_id: 3,
+        task: "課�?4",
+        due: "2023/1/22",
+        lesson: "古典中世音楽",
+        task_detail: "歴史につ�?て"
+      },{
+        lesson_id: 4,
+        task: "課�?5",
+        due: "2022/12/15",
+        lesson: "古典中世音楽",
+        task_detail: "歴史につ�?て"
       }
       ]
     }
   },
   // 通信で取得するデータ
+  methods: {
+    done(index) {
+      this.items.splice(index, 1)
+      console.log(index)
+    },
+
+    remainDay(due) {
+      let date = new Date();
+      let dueDate = new Date(due);
+      let remain = parseInt((dueDate - date) / 1000/ 60/ 60/ 24);
+
+      return remain
+    }
+
+    
+
+
+
+    
+
+
+  }
 }
 </script>
