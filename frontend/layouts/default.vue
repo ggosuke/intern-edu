@@ -63,7 +63,7 @@ export default {
       fixed: false,
       items: [
         {
-          icon: 'mdi-apps',
+          icon: 'mdi-home',
           title: 'メインページ',
           to: '/'
         },
@@ -80,7 +80,7 @@ export default {
       ],
       miniVariant: false,
       right: true,
-      title: 'カレンダー'
+      title: 'Minnade ウィキ☆ウキ 学生ポータル'
     }
   }
 }
