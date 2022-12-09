@@ -4,6 +4,16 @@
         <v-card-text>
         <v-form>
             <v-container>
+                <div class="mb-2 text-subtitle-1 font-weight-bold">開始時間</div>
+                <v-text-field
+                    label=""
+                    v-model="form.starttime"
+                ></v-text-field>
+                <div class="mb-2 text-subtitle-1 font-weight-bold">終了時間</div>
+                <v-text-field
+                    label=""
+                    v-model="form.endtime"
+                ></v-text-field>
                 <div class="mb-2 text-subtitle-1 font-weight-bold">講義名</div>
                 <v-text-field
                     label=""

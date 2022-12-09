@@ -20,7 +20,6 @@ class ClassTask:
 
 @dataclass
 class ClassDetailsData:
-  day_of_week: str
   starttime: str
   endtime: str
   name: str
@@ -63,7 +62,7 @@ for i in range(0, 30):
         if class_startdate.weekday() in (5,6): continue
         class_id = f"{i:02}{j:02}"
         class_detail_datas[class_id] =  ClassDetailsData(
-                    day_of_week="Monday", starttime=class_startdate_str, endtime=class_enddata_str, name=f"授業-{i}-{j}", id=class_id,
+                    starttime=class_startdate_str, endtime=class_enddata_str, name=f"授業-{i}-{j}", id=class_id,
                     classroom="F123", 
                     links=["http://google.com", "https://google.co.jp"],
                     teacher="教員", tasks=[])
@@ -109,6 +108,18 @@ def putcarend(class_id):
     setattr(class_data, key, value)
 
   message['classdata'] = class_data
+  data['status'] = 200
+  data['data'] = message
+  return jsonify(data), 200
+
+@app.route(str(api_base / "newCalenderDetail"), methods=["POST"])
+def newcarend():
+  message = {}
+  data = {}
+  body = request.json
+  new_class = ClassDetailsData(**body)
+  class_detail_datas[new_class.id] = new_class
+  message['classdata'] = new_class
   data['status'] = 200
   data['data'] = message
   return jsonify(data), 200

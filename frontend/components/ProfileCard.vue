@@ -15,7 +15,15 @@
       <v-card-text>
       <div>
         <v-card class="ma-auto pa-4" max-width="400" tile>
-          <v-card-subtitle class="pb-1 font-weight-bold">講義名</v-card-subtitle>
+          <v-card-subtitle class="pt-0 pb-1 font-weight-bold">開始時間</v-card-subtitle>
+          <v-card-text class="pt-0 pb-1">
+            {{ profile.starttime }}
+          </v-card-text>
+          <v-card-subtitle class="pt-0 pb-1 font-weight-bold">終了時間</v-card-subtitle>
+          <v-card-text class="pt-0 pb-1">
+            {{ profile.endtime }}
+          </v-card-text>
+          <v-card-subtitle class="pt-0 pb-1 font-weight-bold">講義名</v-card-subtitle>
           <v-card-text class="pt-0 pb-1">
             {{ profile.name }}
           </v-card-text>

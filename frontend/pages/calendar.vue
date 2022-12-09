@@ -79,6 +79,7 @@
             @click:event="showEvent"
             @click:more="viewWeek"
             @click:date="viewWeek"
+            @contextmenu:day="showAddEvent"
             @change="updateRange"
             ></v-calendar>
             <template v-if="selectedEvent">
@@ -91,6 +92,18 @@
             <profile-card :key="selectedEvent.details.id" :initial-data="selectedEvent.details" 
               :color="selectedEvent.color" @close="closeCard" @submitted="submitted"/>
             </v-menu></template>
+            <template v-if="createNew">
+              <v-menu
+                v-model="createNew"
+                :close-on-content-click="false"
+                :position-x="x"
+                :position-y="y"
+                absolute
+                offset-x
+              >
+            <profile-edit-dialog :key="('createNew_'+createNewCount)" :initial-data="newevent" @submitted="addEvent"/>
+            </v-menu>
+            </template>
         </v-sheet>
         </v-col>
     </v-row>
@@ -112,6 +125,11 @@
       selectedEvent: null,
       selectedElement: null,
       selectedOpen: false,
+      createNew: false,
+      createNewCount: 0,
+      newevent: null,
+      x:0,
+      y:0,
       events: [],
       colors: ['blue', 'indigo', 'deep-purple', 'cyan', 'green', 'orange', 'grey darken-1'],
       names: ['Meeting', 'Holiday', 'PTO', 'Travel', 'Event', 'Birthday', 'Conference', 'Party'],
@@ -121,6 +139,10 @@
       this.$refs.calendar.checkChange()
     },
     methods: {
+      viewDay ({ date }) {
+        this.focus = date
+        this.type = 'day'
+      },
       viewWeek ({ date }) {
         this.focus = date
         this.type = 'week'
@@ -136,6 +158,30 @@
       },
       next () {
         this.$refs.calendar.next()
+      },
+      showAddEvent({ date }, e) {
+          this.x = e.clientX
+          this.y = e.clientY
+          this.newevent = (()=>{
+            return {
+            name: "",
+            id: "newcreated_"+this.createNewCount,
+            classroom: "",
+            teacher: "",
+            links: [],
+            tasks: [],
+            starttime: date+"T00:00:00" ,
+            endtime: date+"T00:00:00"
+          }})()
+          this.createNewCount ++
+          this.createNew = true
+      },
+      addEvent(newevent) {
+        axios.post("/api/newCalenderDetail", newevent)
+        this.calendardata.push(newevent)
+        this.createNew = false
+        this.updateRange({start: 0, end: 0})
+        this.$forceUpdate()
       },
       showEvent ({ nativeEvent, event }) {
         const open = () => {
@@ -202,5 +248,7 @@
     background-color: #333333 !important;
     border-color: #ffffff !important;
 }
-
+.v-menu__content {
+  background-color: #333333 !important;
+}
 </style>
