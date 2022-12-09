@@ -50,7 +50,8 @@
 
                   <v-card-actions >
                     <v-col class ="text-right">
-                      <v-btn @click="done(index)">
+                      <v-btn @click="done(index)"
+                        color=#B0BEC5>
                         完了
                       </v-btn>
                     
@@ -120,21 +121,39 @@ export default {
       console.log(index)
     },
 
+    
     remainDay(due) {
+      console.log(due);
       let date = new Date();
       let dueDate = new Date(due);
       let remain = parseInt((dueDate - date) / 1000/ 60/ 60/ 24);
+      return remain;
+    },
 
-      return remain
+    sortDate(items) {
+      console.log(items);
+      const sortedItems = items.sort((a,b) => {
+        const dateA = a.due;
+        const dateB = b.due;
+        if (dateA < dateB) {
+          return -1;
+        } 
+        if (dateA > dateB) { 
+          return 1;
+        }
+        return 0;
+      })
+      console.log("111111");
+      console.log(sortedItems);
+      return sortedItems;
     }
 
-    
+  },
 
-
-
-    
-
-
-  }
+  created() {
+    console.log("created");
+    this.sortDate(this.items);
+  } 
+  
 }
 </script>
