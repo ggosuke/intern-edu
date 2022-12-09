@@ -66,11 +66,14 @@ export default {
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
+    // cache: true,
+    // hardSource: true,
   },
-
   watchers: {
     webpack: {
-      poll: true,
-    }
+        ignored: ['~/node_modules', "~/.nuxt"],
+        poll: 300,
+        aggregateTimeout: 10,
+    },
   }
 }

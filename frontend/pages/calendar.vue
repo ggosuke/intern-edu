@@ -58,17 +58,11 @@
                 </v-btn>
                 </template>
                 <v-list>
-                <v-list-item @click="type = 'day'">
-                    <v-list-item-title>Day</v-list-item-title>
-                </v-list-item>
                 <v-list-item @click="type = 'week'">
                     <v-list-item-title>Week</v-list-item-title>
                 </v-list-item>
                 <v-list-item @click="type = 'month'">
                     <v-list-item-title>Month</v-list-item-title>
-                </v-list-item>
-                <v-list-item @click="type = '4day'">
-                    <v-list-item-title>4 days</v-list-item-title>
                 </v-list-item>
                 </v-list>
             </v-menu>
@@ -83,51 +77,34 @@
             :event-color="getEventColor"
             :type="type"
             @click:event="showEvent"
-            @click:more="viewDay"
-            @click:date="viewDay"
+            @click:more="viewWeek"
+            @click:date="viewWeek"
+            @contextmenu:day="showAddEvent"
+            @contextmenu:time="showAddEvent"
             @change="updateRange"
             ></v-calendar>
+            <template v-if="selectedEvent">
             <v-menu
             v-model="selectedOpen"
             :close-on-content-click="false"
             :activator="selectedElement"
             offset-x
             >
-            <v-card
-                color="grey lighten-4"
-                min-width="350px"
-                flat
-            >
-                <v-toolbar
-                :color="selectedEvent.color"
-                dark
-                >
-                <v-btn icon>
-                    <v-icon>mdi-pencil</v-icon>
-                </v-btn>
-                <v-toolbar-title v-html="selectedEvent.name"></v-toolbar-title>
-                <v-spacer></v-spacer>
-                <v-btn icon>
-                    <v-icon>mdi-heart</v-icon>
-                </v-btn>
-                <v-btn icon>
-                    <v-icon>mdi-dots-vertical</v-icon>
-                </v-btn>
-                </v-toolbar>
-                <v-card-text>
-                <span v-html="selectedEvent.details"></span>
-                </v-card-text>
-                <v-card-actions>
-                <v-btn
-                    text
-                    color="secondary"
-                    @click="selectedOpen = false"
-                >
-                    Cancel
-                </v-btn>
-                </v-card-actions>
-            </v-card>
+            <profile-card :key="selectedEvent.details.id" :initial-data="selectedEvent.details" :classnames="classnames"
+              :color="selectedEvent.color" @close="closeCard" @submitted="submitted" @delete="deleteevent"/>
+            </v-menu></template>
+            <template v-if="createNew">
+              <v-menu
+                v-model="createNew"
+                :close-on-content-click="false"
+                :position-x="x"
+                :position-y="y"
+                absolute
+                offset-x
+              >
+            <profile-edit-dialog :key="('createNew_'+createNewCount)" :initial-data="newevent" :classnames="classnames" :show-delete="false" @submitted="addEvent"/>
             </v-menu>
+            </template>
         </v-sheet>
         </v-col>
     </v-row>
@@ -135,6 +112,9 @@
 </template>
   
 <script>
+  import axios from 'axios'
+  axios.defaults.baseURL = 'http://localhost';
+  globalThis.calendar = []
   export default {
     data: () => ({
       focus: '',
@@ -142,23 +122,36 @@
       typeToLabel: {
         month: 'Month',
         week: 'Week',
-        day: 'Day',
-        '4day': '4 Days',
       },
-      selectedEvent: {},
+      selectedEvent: null,
       selectedElement: null,
       selectedOpen: false,
+      createNew: false,
+      createNewCount: 0,
+      newevent: null,
+      x:0,
+      y:0,
       events: [],
       colors: ['blue', 'indigo', 'deep-purple', 'cyan', 'green', 'orange', 'grey darken-1'],
       names: ['Meeting', 'Holiday', 'PTO', 'Travel', 'Event', 'Birthday', 'Conference', 'Party'],
+      calendardata: [],
+      classnames: {},
+      username: ''
     }),
     mounted () {
       this.$refs.calendar.checkChange()
     },
     methods: {
+      clickTime ({date,time }){
+        console.log(date, time)
+      },
       viewDay ({ date }) {
         this.focus = date
         this.type = 'day'
+      },
+      viewWeek ({ date }) {
+        this.focus = date
+        this.type = 'week'
       },
       getEventColor (event) {
         return event.color
@@ -172,6 +165,36 @@
       next () {
         this.$refs.calendar.next()
       },
+      closeCard () {
+        this.selectedOpen = false
+        this.selectedEvent = null
+      },
+      showAddEvent({ date, time, hasTime }, e) {
+          const date_suffix = hasTime ? `T${time}` : "T00:00"
+          this.x = e.clientX
+          this.y = e.clientY
+          this.newevent = (()=>{
+            return {
+            name: "",
+            id: "newcreated_"+this.createNewCount,
+            classroom: "",
+            teacher: "",
+            links: [],
+            tasks: [],
+            starttime: date+date_suffix ,
+            endtime: date+date_suffix
+          }})()
+          this.createNewCount ++
+          this.createNew = true
+      },
+      addEvent(newevent) {
+        newevent.id = this.classnames[newevent.name] + "-" + newevent.id
+        axios.post("/api/newCalenderDetail", newevent)
+        this.calendardata.push(newevent)
+        this.createNew = false
+        this.updateRange({start: 0, end: 0})
+        this.$forceUpdate()
+      },
       showEvent ({ nativeEvent, event }) {
         const open = () => {
           this.selectedEvent = event
@@ -180,37 +203,92 @@
         }
         if (this.selectedOpen) {
           this.selectedOpen = false
+          this.selectedEvent = null
           requestAnimationFrame(() => requestAnimationFrame(() => open()))
         } else {
           open()
         }
         nativeEvent.stopPropagation()
       },
+      deleteevent: function(e){
+        axios.delete("/api/deleteCalenderDetail/" + e.id)
+        for(let i = 0; i < this.calendardata.length; i++){
+          let elem = this.calendardata[i]
+          if (elem.id != e.id) {continue}
+          this.calendardata.splice(i, 1)
+          break
+        }
+        this.updateRange({start: 0, end: 0})
+        this.$forceUpdate()
+      },
+      submitted (newevent){
+        console.log(newevent.name)
+        const bind_this = this
+        axios.put("/api/putCalenderDetail/" + newevent.id, newevent).then(res =>{
+          console.log(res)
+          for (let i = 0; i < bind_this.calendardata.length; i++){
+            let elem = bind_this.calendardata[i]
+            if (elem.id != newevent.id){
+              continue
+            }
+            bind_this.$set(bind_this.calendardata, i, newevent) 
+          }
+          this.updateRange({start: 0, end: 0})
+          this.$forceUpdate()
+        }).catch(err=>{console.log(err)})
+      },
       updateRange ({ start, end }) {
         const events = []
-        const min = new Date(`${start.date}T00:00:00`)
-        const max = new Date(`${end.date}T23:59:59`)
-        const days = (max.getTime() - min.getTime()) / 86400000
-        const eventCount = this.rnd(days, days + 20)
-        for (let i = 0; i < eventCount; i++) {
-          const allDay = this.rnd(0, 3) === 0
-          const firstTimestamp = this.rnd(min.getTime(), max.getTime())
-          const first = new Date(firstTimestamp - (firstTimestamp % 900000))
-          const secondTimestamp = this.rnd(2, allDay ? 288 : 8) * 900000
-          const second = new Date(first.getTime() + secondTimestamp)
+        this.calendardata.forEach((e)=>{
           events.push({
-            name: this.names[this.rnd(0, this.names.length - 1)],
-            start: first,
-            end: second,
-            color: this.colors[this.rnd(0, this.colors.length - 1)],
-            timed: !allDay,
+            name: e.name,
+            start: e.starttime,
+            end: e.endtime,
+            color: "blue",
+            timed: true,
+            details: e
           })
-        }
+        }, this)
         this.events = events
       },
-      rnd (a, b) {
-        return Math.floor((b - a + 1) * Math.random()) + a
-      },
     },
+    created: function(){
+      console.log(JSON.parse(JSON.stringify(this.calendardata)))
+      this.calendardata.forEach(e=>{
+        this.classnames[e.name] = e.id.split("-")[0]
+      })
+      const binded = this
+      const username = this.username
+      setInterval(
+        function() {
+          axios.get('/api/getCalender/' + username).then(e=>{
+              binded.calendardata.splice(0, binded.calendardata.length)
+              binded.calendardata.push(...e.data.calendar)
+              binded.updateRange({start: 0, end: 0})
+              binded.$forceUpdate()
+          })
+        }, 2500
+      )
+    },
+    async asyncData () {
+      const params = new URL(location.href).searchParams
+      let user = "all"
+      if (params.has("id")){
+        user = params.get("id")
+      }
+      console.log()
+      const data = await axios.get('/api/getCalender/' + user)
+      return {calendardata: data.data.calendar, username: user}
+    }
   }
 </script>
+
+<style>
+.v-application .grey.lighten-4 {
+    background-color: #333333 !important;
+    border-color: #ffffff !important;
+}
+.v-menu__content {
+  background-color: #4e4e4e !important;
+}
+</style>

@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from dataclasses import dataclass
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 from typing import Iterable, Dict, Any
 
@@ -20,41 +20,82 @@ class ClassTask:
 
 @dataclass
 class ClassDetailsData:
-  day_of_week: str
-  datetime: str
+  starttime: str
+  endtime: str
   name: str
   classroom: str
   links: Iterable[str]
   teacher: str
   id: str
-  weeklytasks: Iterable[ClassTask]
-  generaltask: Iterable[ClassTask]
+  tasks: Iterable[ClassTask]
 
 
 
-class_date = datetime.now(pytz.timezone('Asia/Tokyo')).strftime('%Y%m%d %H%M')
+class_startdate = datetime.now(pytz.timezone('Asia/Tokyo'))
+class_enddata = class_startdate + timedelta(minutes=90)
+class_startdate_str = class_startdate.strftime('%Y-%m-%dT%H:%M:00')
+class_enddata_str = class_enddata.strftime('%Y-%m-%dT%H:%M:00')
+
+class_names = [f"授業{i}" for i in range(0, 10)]
+
 class_rough_datas = {
-  "00001" : ClassData(day_of_week="Monday", datetime=class_date, name="線形代数", id='0001'),
+  "00001" : ClassData(day_of_week="Monday", datetime=class_startdate_str, name="線形代数", id='0001'),
 }
-class_detail_datas = {
-  "00001": ClassDetailsData(
-            day_of_week="Monday", datetime=class_date, name="線形代数", id="00001",
-            classroom="F123", 
-            links=["https://ibm.webex.com/ibm-jp/j.php?MTID=m0372978239d101675d877a7c6ded9a5b"],
-            teacher="aaa",
-            weeklytasks=[], generaltask=[])
-}
+# class_detail_datas = {
+#   "00001": ClassDetailsData(
+#             day_of_week="Monday", starttime=class_startdate_str, endtime=class_enddata_str, name="線形代数", id="00001",
+#             classroom="F123", 
+#             links=["https://ibm.webex.com/ibm-jp/j.php?MTID=m0372978239d101675d877a7c6ded9a5b"],
+#             teacher="aaa",
+#             weeklytasks=[], generaltask=[])
+# }
 
+class_detail_datas = {}
+now = datetime.now(pytz.timezone('Asia/Tokyo')) 
+today_h_m_d = [now.year, now.month, 1]
+for i in range(0, 30):
+    for j in range(0, 5):
+        class_startdate = datetime(*today_h_m_d, hour=9) + timedelta(days=i) + timedelta(minutes=95 * j)
+        class_enddata = class_startdate + timedelta(minutes=90)
+        class_startdate_str = class_startdate.strftime('%Y-%m-%dT%H:%M:00')
+        class_enddata_str = class_enddata.strftime('%Y-%m-%dT%H:%M:00')
+        weekday = class_startdate.weekday()
+        if weekday in (5,6): continue
+        class_id = f"{weekday:02}{j:02}-{i:02}{j:02}"
+        class_detail_datas[class_id] =  ClassDetailsData(
+                    starttime=class_startdate_str, endtime=class_enddata_str, name=f"授業 {weekday}-{j}", id=class_id,
+                    classroom="F123", 
+                    links=["http://google.com", "https://google.co.jp"],
+                    teacher="教員", tasks=[])
 
 # Blueprint
 app = Blueprint('hello', __name__)
 
 api_base = Path("/api")
 
-@app.route(str(api_base / 'getCalender'), methods=["GET"])
-def getcalend():
+user_classid_data = {
+  "A": set(
+    f"{weekday:02}{j:02}" for weekday in (0,1,2,3) for j in (1,2,3)
+  ),
+  "B": set(
+    f"{weekday:02}{j:02}" for weekday in (2,3,4) for j in (2,3,4)
+  )
+}
+
+def get_calender_by_user(user):
+  res = []
+  if user=="all":
+    return list(class_detail_datas.values())
+  id_set = user_classid_data[user]
+  for i in class_detail_datas.values():
+    if i.id.split("-")[0] not in id_set: continue
+    res.append(i)
+  return res
+
+@app.route(str(api_base / 'getCalender/<user>'), methods=["GET"])
+def getcalend(user):
   data: Dict[str, Any] = {"status": 200}
-  data['carenders'] = list(class_detail_datas.values())
+  data['calendar'] = get_calender_by_user(user)
 
   return jsonify(data), 200
 
@@ -71,7 +112,7 @@ def getCalenderDetail(class_id):
 
   return jsonify(data), status
 
-@app.route(str(api_base / "putCarender/<class_id>"), methods=["PUT"])
+@app.route(str(api_base / "putCalenderDetail/<class_id>"), methods=["PUT"])
 def putcarend(class_id):
   message = {}
   data = {}
@@ -81,9 +122,34 @@ def putcarend(class_id):
   class_data = class_detail_datas[class_id]
   body = request.json
   for key in body.keys():
-    setattr(class_data, key, body[key])
+    value = body[key]
+    if isinstance(value, list):
+      value = [i for i in value if i is not None]
+    setattr(class_data, key, value)
 
   message['classdata'] = class_data
+  data['status'] = 200
+  data['data'] = message
+  return jsonify(data), 200
+
+@app.route(str(api_base / "newCalenderDetail"), methods=["POST"])
+def newcarend():
+  message = {}
+  data = {}
+  body = request.json
+  new_class = ClassDetailsData(**body)
+  class_detail_datas[new_class.id] = new_class
+  message['classdata'] = new_class
+  data['status'] = 200
+  data['data'] = message
+  return jsonify(data), 200
+
+@app.route(str(api_base / "deleteCalenderDetail/<class_id>"), methods=["DELETE"])
+def delcarend(class_id):
+  message = {}
+  data = {}
+  del_class = class_detail_datas.pop(class_id) 
+  message['classdata'] = del_class
   data['status'] = 200
   data['data'] = message
   return jsonify(data), 200
