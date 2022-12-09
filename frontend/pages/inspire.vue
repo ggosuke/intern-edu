@@ -13,7 +13,7 @@
                   color="#385F73"
                   dark
                   class="ma-2"
-                  v-for = "item in items"
+                  v-for = "(item,index) in items"
                   >
                   <v-card-title class="text-h5">
                     {{item.task}}
@@ -46,7 +46,7 @@
 
                   <v-card-actions >
                     <v-col class ="text-right">
-                      <v-btn>
+                      <v-btn @click="done(index)">
                         完了
                       </v-btn>
                     </v-col>
@@ -75,11 +75,13 @@ export default {
   data() {
     return {
       items: [{
+        lesson_id: 0,
         task: "task1",
         due: "12/1",
         lesson: "lesson1",
         task_detail: "task1xxxx"
       },{
+        lesson_id: 1,
         task: "task2",
         due: "12/1",
         lesson: "lesson2",
@@ -89,6 +91,11 @@ export default {
     }
   },
   // 通信で取得するデータ
-
+  methods: {
+    done(index) {
+      this.items.splice(index, 1)
+      console.log(index)
+    }
+  }
 }
 </script>
