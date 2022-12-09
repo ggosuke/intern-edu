@@ -33,7 +33,7 @@
             </v-card-subtitle>
             <ul>
             <li v-for="(link, index) in profile.links" class="pt-0 pb-1" :key="index+'_link'" v-if="(link!=null)">
-                {{ link }}
+                <a :href="link" target="_blank">{{link}}</a>
             </li>
             </ul>
           </div>
@@ -47,7 +47,7 @@
               課題名 : {{ task.name }}
             </v-row>
               <v-row no-gutters>
-              課題リンク : {{ task.link }}
+              課題リンク : <a :href="task.link" target="_blank">{{task.link}}</a>
             </v-row>
             <v-row no-gutters>
               期限 : {{ task.limitdate }}
