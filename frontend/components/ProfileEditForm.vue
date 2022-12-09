@@ -174,7 +174,7 @@ export default {
     },
     created: function() {
         console.log(this.value.classnames)
-        this.classnames = Array.from(this.value.classnames)
+        this.classnames = Array.from(Object.keys(this.value.classnames))
         this.form = this.value.profile
     },
 }

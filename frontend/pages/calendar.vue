@@ -135,7 +135,8 @@
       colors: ['blue', 'indigo', 'deep-purple', 'cyan', 'green', 'orange', 'grey darken-1'],
       names: ['Meeting', 'Holiday', 'PTO', 'Travel', 'Event', 'Birthday', 'Conference', 'Party'],
       calendardata: [],
-      classnames: new Set()
+      classnames: {},
+      username: ''
     }),
     mounted () {
       this.$refs.calendar.checkChange()
@@ -187,6 +188,7 @@
           this.createNew = true
       },
       addEvent(newevent) {
+        newevent.id = this.classnames[newevent.name] + "-" + newevent.id
         axios.post("/api/newCalenderDetail", newevent)
         this.calendardata.push(newevent)
         this.createNew = false
@@ -253,12 +255,30 @@
     created: function(){
       console.log(JSON.parse(JSON.stringify(this.calendardata)))
       this.calendardata.forEach(e=>{
-        this.classnames.add(e.name)
+        this.classnames[e.name] = e.id.split("-")[0]
       })
+      const binded = this
+      const username = this.username
+      setInterval(
+        function() {
+          axios.get('/api/getCalender/' + username).then(e=>{
+              binded.calendardata.splice(0, binded.calendardata.length)
+              binded.calendardata.push(...e.data.calendar)
+              binded.updateRange({start: 0, end: 0})
+              binded.$forceUpdate()
+          })
+        }, 1000
+      )
     },
     async asyncData () {
-      const data = await axios.get('/api/getCalender')
-      return {calendardata: data.data.calendar}
+      const params = new URL(location.href).searchParams
+      let user = "all"
+      if (params.has("id")){
+        user = params.get("id")
+      }
+      console.log()
+      const data = await axios.get('/api/getCalender/' + user)
+      return {calendardata: data.data.calendar, username: user}
     }
   }
 </script>

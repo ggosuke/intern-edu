@@ -28,7 +28,7 @@ export default {
     props: {
         initialData : Object,
         showDelete: Boolean,
-        classnames: Set
+        classnames: Object
     },
     data: function(){
         return {

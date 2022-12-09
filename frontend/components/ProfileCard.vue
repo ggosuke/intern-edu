@@ -85,7 +85,7 @@ export default {
   props: {
     initialData: Object,
     color: String,
-    classnames: Set
+    classnames: Object
   },
   data: function() {
     return {

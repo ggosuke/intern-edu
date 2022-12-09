@@ -73,14 +73,29 @@ app = Blueprint('hello', __name__)
 
 api_base = Path("/api")
 
-user_classname_data = {
-  
+user_classid_data = {
+  "A": set(
+    f"{weekday:02}{j:02}" for weekday in (0,1,2,3) for j in (1,2,3)
+  ),
+  "B": set(
+    f"{weekday:02}{j:02}" for weekday in (2,3,4) for j in (2,3,4)
+  )
 }
 
-@app.route(str(api_base / 'getCalender'), methods=["GET"])
-def getcalend():
+def get_calender_by_user(user):
+  res = []
+  if user=="all":
+    return list(class_detail_datas.values())
+  id_set = user_classid_data[user]
+  for i in class_detail_datas.values():
+    if i.id.split("-")[0] not in id_set: continue
+    res.append(i)
+  return res
+
+@app.route(str(api_base / 'getCalender/<user>'), methods=["GET"])
+def getcalend(user):
   data: Dict[str, Any] = {"status": 200}
-  data['calendar'] = list(class_detail_datas.values())
+  data['calendar'] = get_calender_by_user(user)
 
   return jsonify(data), 200
 
