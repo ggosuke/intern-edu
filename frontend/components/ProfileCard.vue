@@ -6,8 +6,9 @@
   >
       <v-toolbar  :color="color" dark>
       <profile-edit-dialog
-        :initial-data="profile"
+        :initial-data="profile" :show-delete="true" :classnames="classnames"
         @submitted="submitted"
+        @delete="deleteevent"
       />
       <v-toolbar-title v-html="profile.name"></v-toolbar-title>
       <v-spacer></v-spacer>
@@ -84,6 +85,7 @@ export default {
   props: {
     initialData: Object,
     color: String,
+    classnames: Set
   },
   data: function() {
     return {
@@ -100,6 +102,10 @@ export default {
     },
     closeCard: function() {
       this.$emit("close")
+    },
+    deleteevent: function(e){
+      this.closeCard()
+      this.$emit("delete", e)
     }
   }
 }

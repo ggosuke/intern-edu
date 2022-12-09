@@ -15,10 +15,8 @@
                     v-model="form.endtime"
                 ></v-text-field>
                 <div class="mb-2 text-subtitle-1 font-weight-bold">講義名</div>
-                <v-text-field
-                    label=""
-                    v-model="form.name"
-                ></v-text-field>
+                <v-select :items="classnames" label="講義名" v-model="form.name">
+                </v-select>
                 <div class="mb-2 text-subtitle-1 font-weight-bold">教員</div>
                 <v-text-field
                     label=""
@@ -126,6 +124,7 @@ export default {
             newlink: null,
             newtask: null,
             task_index: 0,
+            classnames: []
         }
     },
     methods: {
@@ -174,7 +173,9 @@ export default {
         },
     },
     created: function() {
-        this.form = this.value
+        console.log(this.value.classnames)
+        this.classnames = Array.from(this.value.classnames)
+        this.form = this.value.profile
     },
 }
 </script>

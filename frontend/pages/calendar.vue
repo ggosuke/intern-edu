@@ -80,6 +80,7 @@
             @click:more="viewWeek"
             @click:date="viewWeek"
             @contextmenu:day="showAddEvent"
+            @contextmenu:time="showAddEvent"
             @change="updateRange"
             ></v-calendar>
             <template v-if="selectedEvent">
@@ -89,8 +90,8 @@
             :activator="selectedElement"
             offset-x
             >
-            <profile-card :key="selectedEvent.details.id" :initial-data="selectedEvent.details" 
-              :color="selectedEvent.color" @close="closeCard" @submitted="submitted"/>
+            <profile-card :key="selectedEvent.details.id" :initial-data="selectedEvent.details" :classnames="classnames"
+              :color="selectedEvent.color" @close="closeCard" @submitted="submitted" @delete="deleteevent"/>
             </v-menu></template>
             <template v-if="createNew">
               <v-menu
@@ -101,7 +102,7 @@
                 absolute
                 offset-x
               >
-            <profile-edit-dialog :key="('createNew_'+createNewCount)" :initial-data="newevent" @submitted="addEvent"/>
+            <profile-edit-dialog :key="('createNew_'+createNewCount)" :initial-data="newevent" :classnames="classnames" :show-delete="false" @submitted="addEvent"/>
             </v-menu>
             </template>
         </v-sheet>
@@ -133,12 +134,16 @@
       events: [],
       colors: ['blue', 'indigo', 'deep-purple', 'cyan', 'green', 'orange', 'grey darken-1'],
       names: ['Meeting', 'Holiday', 'PTO', 'Travel', 'Event', 'Birthday', 'Conference', 'Party'],
-      calendardata: []
+      calendardata: [],
+      classnames: new Set()
     }),
     mounted () {
       this.$refs.calendar.checkChange()
     },
     methods: {
+      clickTime ({date,time }){
+        console.log(date, time)
+      },
       viewDay ({ date }) {
         this.focus = date
         this.type = 'day'
@@ -159,7 +164,12 @@
       next () {
         this.$refs.calendar.next()
       },
-      showAddEvent({ date }, e) {
+      closeCard () {
+        this.selectedOpen = false
+        this.selectedEvent = null
+      },
+      showAddEvent({ date, time, hasTime }, e) {
+          const date_suffix = hasTime ? `T${time}` : "T00:00"
           this.x = e.clientX
           this.y = e.clientY
           this.newevent = (()=>{
@@ -170,8 +180,8 @@
             teacher: "",
             links: [],
             tasks: [],
-            starttime: date+"T00:00:00" ,
-            endtime: date+"T00:00:00"
+            starttime: date+date_suffix ,
+            endtime: date+date_suffix
           }})()
           this.createNewCount ++
           this.createNew = true
@@ -198,9 +208,16 @@
         }
         nativeEvent.stopPropagation()
       },
-      closeCard () {
-        this.selectedOpen = false
-        this.selectedEvent = null
+      deleteevent: function(e){
+        axios.delete("/api/deleteCalenderDetail/" + e.id)
+        for(let i = 0; i < this.calendardata.length; i++){
+          let elem = this.calendardata[i]
+          if (elem.id != e.id) {continue}
+          this.calendardata.splice(i, 1)
+          break
+        }
+        this.updateRange({start: 0, end: 0})
+        this.$forceUpdate()
       },
       submitted (newevent){
         console.log(newevent.name)
@@ -235,6 +252,9 @@
     },
     created: function(){
       console.log(JSON.parse(JSON.stringify(this.calendardata)))
+      this.calendardata.forEach(e=>{
+        this.classnames.add(e.name)
+      })
     },
     async asyncData () {
       const data = await axios.get('/api/getCalender')
@@ -249,6 +269,6 @@
     border-color: #ffffff !important;
 }
 .v-menu__content {
-  background-color: #333333 !important;
+  background-color: #4e4e4e !important;
 }
 </style>

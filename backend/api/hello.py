@@ -59,10 +59,11 @@ for i in range(0, 30):
         class_enddata = class_startdate + timedelta(minutes=90)
         class_startdate_str = class_startdate.strftime('%Y-%m-%dT%H:%M:00')
         class_enddata_str = class_enddata.strftime('%Y-%m-%dT%H:%M:00')
-        if class_startdate.weekday() in (5,6): continue
-        class_id = f"{i:02}{j:02}"
+        weekday = class_startdate.weekday()
+        if weekday in (5,6): continue
+        class_id = f"{weekday:02}{j:02}-{i:02}{j:02}"
         class_detail_datas[class_id] =  ClassDetailsData(
-                    starttime=class_startdate_str, endtime=class_enddata_str, name=f"授業-{i}-{j}", id=class_id,
+                    starttime=class_startdate_str, endtime=class_enddata_str, name=f"授業 {weekday}-{j}", id=class_id,
                     classroom="F123", 
                     links=["http://google.com", "https://google.co.jp"],
                     teacher="教員", tasks=[])
@@ -71,6 +72,10 @@ for i in range(0, 30):
 app = Blueprint('hello', __name__)
 
 api_base = Path("/api")
+
+user_classname_data = {
+  
+}
 
 @app.route(str(api_base / 'getCalender'), methods=["GET"])
 def getcalend():
@@ -120,6 +125,16 @@ def newcarend():
   new_class = ClassDetailsData(**body)
   class_detail_datas[new_class.id] = new_class
   message['classdata'] = new_class
+  data['status'] = 200
+  data['data'] = message
+  return jsonify(data), 200
+
+@app.route(str(api_base / "deleteCalenderDetail/<class_id>"), methods=["DELETE"])
+def delcarend(class_id):
+  message = {}
+  data = {}
+  del_class = class_detail_datas.pop(class_id) 
+  message['classdata'] = del_class
   data['status'] = 200
   data['data'] = message
   return jsonify(data), 200

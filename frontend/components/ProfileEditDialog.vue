@@ -7,10 +7,11 @@
           </v-btn>
         </template>
         <v-card class="ma-auto pa-4">
-          <profile-edit-form v-model="profile" :key="('edit_form_'+count)" />
+          <profile-edit-form v-model="obj" :key="('edit_form_'+count)" />
           <v-card-actions>
             <v-btn color="primary" @click="submit">変更する</v-btn>
             <v-btn color="primary" @click="revert">元に戻す</v-btn>
+            <v-btn v-if="this.showDelete" class="ml-auto" color="red" @click="deleteevent">削除</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -25,12 +26,15 @@ function clone(e){
 export default {
     name: "ProfileEditDialog",
     props: {
-        initialData : Object
+        initialData : Object,
+        showDelete: Boolean,
+        classnames: Set
     },
     data: function(){
         return {
             editDialog: false,
             profile: {},
+            obj: {},
             count: 0
         }
     },
@@ -43,10 +47,16 @@ export default {
             this.profile = clone(this.initialData)
             this.count++
             this.$forceUpdate()
+        },
+        deleteevent: function() {
+            this.$emit("delete", clone(this.profile))
+            this.editDialog = false
         }
     },
     created: function(){
         this.profile = clone(this.initialData)
+        this.obj.profile = this.profile
+        this.obj.classnames = this.classnames
     }
 }
 
