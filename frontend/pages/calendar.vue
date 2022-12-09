@@ -267,7 +267,7 @@
               binded.updateRange({start: 0, end: 0})
               binded.$forceUpdate()
           })
-        }, 1000
+        }, 2500
       )
     },
     async asyncData () {
